@@ -1,0 +1,46 @@
+ext {
+    neo4jVersion = '2.2.4'
+    osmVersion = '0.43.1'
+    junitVersion = '4.12'
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.5.RELEASE")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'spring-boot'
+apply plugin: 'application'
+
+jar {
+    baseName = 'Neo4jOSM-Routing'
+    version =  '0.1.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+    compile group: 'org.neo4j', name: 'neo4j', version: neo4jVersion
+    compile group: 'org.openstreetmap.osmosis', name: 'osmosis-pbf', version: osmVersion
+    testCompile group: 'junit', name: 'junit', version: junitVersion
+    testCompile group: 'org.neo4j.test', name: 'neo4j-harness', version: neo4jVersion
+}
+
+mainClassName = "it.tfd.neo4josm.routing.Application"
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.6'
+}

@@ -1,6 +1,12 @@
 # IntelliJ IDEA IDE
 .idea
 *.iml
+*.ipr
+*.iws
+
+# Gradle
+.gradle/
+build/
 
 # Compiled Java classes
 *.class
