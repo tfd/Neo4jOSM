@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="CGImap 0.0.2">
+    <bounds minlat="54.0889580" minlon="12.2487570" maxlat="54.0913900" maxlon="12.2524800"/>
+    <relation id="56688" user="kmvar" uid="56190" visible="true" version="28" changeset="6947637" timestamp="2011-01-12T14:23:49Z">
+        <member type="node" ref="294942404" role="start"/>
+        <member type="node" ref="364933006" role="stop"/>
+        <member type="way" ref="4579143" role="via"/>
+        <member type="node" ref="249673494" role="end"/>
+        <tag k="name" v="Küstenbus Linie 123"/>
+        <tag k="network" v="VVW"/>
+        <tag k="operator" v="Regionalverkehr Küste"/>
+        <tag k="ref" v="123"/>
+        <tag k="route" v="bus"/>
+        <tag k="type" v="route"/>
+    </relation>
+</osm>

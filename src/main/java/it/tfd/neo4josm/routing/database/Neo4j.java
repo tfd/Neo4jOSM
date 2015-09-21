@@ -19,12 +19,12 @@ public class Neo4j {
     private GraphDatabaseService graphDb;
 
     public Neo4j() {
-        graphDb = new GraphDatabaseFactory().newEmbeddedDatabase( DB_PATH );
-        registerShutdownHook( graphDb );
+        this(new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH));
     }
 
     public Neo4j(GraphDatabaseService graphDb) {
         this.graphDb = graphDb;
+        registerShutdownHook( this.graphDb );
     }
 
     /**
