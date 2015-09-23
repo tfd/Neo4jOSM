@@ -7,10 +7,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 import org.openstreetmap.osmosis.core.container.v0_6.EntityContainer;
-import org.openstreetmap.osmosis.core.domain.v0_6.Entity;
-import org.openstreetmap.osmosis.core.domain.v0_6.Node;
-import org.openstreetmap.osmosis.core.domain.v0_6.Relation;
-import org.openstreetmap.osmosis.core.domain.v0_6.Way;
+import org.openstreetmap.osmosis.core.domain.v0_6.*;
 import org.openstreetmap.osmosis.core.task.v0_6.RunnableSource;
 import org.openstreetmap.osmosis.core.task.v0_6.Sink;
 import org.openstreetmap.osmosis.xml.common.CompressionMethod;
@@ -46,32 +43,44 @@ public class OsmReaderImpl implements OsmReader {
         waitForJobToFinish(job);
     }
 
+    @Override
+    public String getFilename() {
+        return filename;
+    }
+
     private Sink createSinkForOsmReaderCallback(final OsmReaderCallback cb) {
         return new Sink() {
-                @Override
-                public void process(EntityContainer entityContainer) {
-                    Entity entity = entityContainer.getEntity();
-                    if (entity instanceof Node) {
-                        //do something with the node
-                        cb.addNode((Node) entity);
-                    } else if (entity instanceof Way) {
-                        //do something with the way
-                        cb.addWay((Way) entity);
-                    } else if (entity instanceof Relation) {
-                        //do something with the relation
-                        cb.addRelation((Relation) entity);
-                    }
+            @Override
+            public void process(EntityContainer entityContainer) {
+                Entity entity = entityContainer.getEntity();
+                if (entity instanceof Bound) {
+                    //do something with the bound
+                    cb.setBound((Bound) entity);
+                } else if (entity instanceof Node) {
+                    //do something with the node
+                    cb.addNode((Node) entity);
+                } else if (entity instanceof Way) {
+                    //do something with the way
+                    cb.addWay((Way) entity);
+                } else if (entity instanceof Relation) {
+                    //do something with the relation
+                    cb.addRelation((Relation) entity);
                 }
+            }
 
-                @Override
-                public void initialize(Map<String, Object> metaData) {}
+            @Override
+            public void initialize(Map<String, Object> metaData) {
+            }
 
-                @Override
-                public void release() {}
+            @Override
+            public void release() {
+            }
 
-                @Override
-                public void complete() { cb.complete(); }
-            };
+            @Override
+            public void complete() {
+                cb.complete();
+            }
+        };
     }
 
     private Future createReaderJob(File file, Sink sinkImplementation) throws FileNotFoundException {
@@ -81,7 +90,7 @@ public class OsmReaderImpl implements OsmReader {
     }
 
     private RunnableSource createOsmFileReader(File file) throws FileNotFoundException {
-        return isCompressed(file) ? new XmlReader(file, false, getCompressionMethod(file)): new crosby.binary.osmosis.OsmosisReader(new FileInputStream(file));
+        return isCompressed(file) ? new XmlReader(file, false, getCompressionMethod(file)) : new crosby.binary.osmosis.OsmosisReader(new FileInputStream(file));
     }
 
     private void waitForJobToFinish(Future job) throws ExecutionException, InterruptedException {
@@ -104,4 +113,10 @@ public class OsmReaderImpl implements OsmReader {
         return compression;
     }
 
+    @Override
+    public String toString() {
+        return "OsmReaderImpl{" +
+                "filename='" + filename + '\'' +
+                '}';
+    }
 }

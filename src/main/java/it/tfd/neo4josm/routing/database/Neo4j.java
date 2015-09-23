@@ -24,7 +24,14 @@ public class Neo4j {
 
     public Neo4j(GraphDatabaseService graphDb) {
         this.graphDb = graphDb;
-        registerShutdownHook( this.graphDb );
+        registerShutdownHook(this.graphDb);
+    }
+
+    /**
+     * @return Underlying neo4j graph database
+     */
+    public GraphDatabaseService getGraphDb() {
+        return graphDb;
     }
 
     /**

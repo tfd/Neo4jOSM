@@ -1,5 +1,6 @@
 package it.tfd.neo4josm.routing.database;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
@@ -9,13 +10,12 @@ import org.openstreetmap.osmosis.osmbinary.Osmformat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -28,6 +28,21 @@ public class OsmReaderImplTest {
 
     @Mock
     private OsmReaderCallback cb;
+
+    private Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    private OsmUser user = OsmUser.NONE;
+
+    @Before
+    public void initVariables() {
+        calendar.set(2009, Calendar.MARCH, 11, 6, 30, 8);
+    }
+
+    @Test
+    public void testSetBound() throws Exception {
+        OsmReader reader = new OsmReaderImpl("./src/test/resources/nodes.osm");
+        reader.parse(cb);
+        verify(cb, times(1)).setBound(any(Bound.class));
+    }
 
     @Test
     public void testNumberOfNodes() throws Exception {
@@ -107,33 +122,43 @@ public class OsmReaderImplTest {
     }
 
     @Test
+    public void testBound() throws FileNotFoundException, InterruptedException, ExecutionException {
+        OsmReader reader = new OsmReaderImpl("./src/test/resources/nodes.osm");
+
+        reader.parse(cb);
+
+        ArgumentCaptor<Bound> argument = ArgumentCaptor.forClass(Bound.class);
+
+        verify(cb, times(1)).setBound(argument.capture());
+        Bound bound = argument.getValue();
+
+        assertEquals(34.0662408634219, bound.getBottom(), 0.00000000000001);
+        assertEquals(34.0731374116421, bound.getTop(), 0.00000000000001);
+        assertEquals(-118.736715316772, bound.getLeft(), 0.00000000000001);
+        assertEquals(-118.73122215271, bound.getRight(), 0.00000000000001);
+        assertEquals("OpenStreetMap server", bound.getOrigin());
+    }
+
+    @Test
     public void testNodes() throws Exception {
         OsmReader reader = new OsmReaderImpl("./src/test/resources/nodes.osm");
 
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        OsmUser user = new OsmUser(1, "");
 
-        calendar.set(2009, 3, 11, 6, 30, 8);
         CommonEntityData commonEntityData = new CommonEntityData(358802885L, 1, calendar.getTime(), user, 0);
         Node node1 = new Node(commonEntityData, 34.0666735, -118.734254);
 
-        calendar.set(2009, 8, 2, 3, 36, 0);
         commonEntityData = new CommonEntityData(453966480L, 1, calendar.getTime(), user, 0);
         Node node2 = new Node(commonEntityData, 34.07234, -118.7343501);
 
-        calendar.set(2009, 8, 2, 3, 36, 1);
         commonEntityData = new CommonEntityData(453966482L, 1, calendar.getTime(), user, 0);
         Node node3 = new Node(commonEntityData, 34.0670965, -118.7322253);
 
-        calendar.set(2009, 8, 2, 3, 35, 45);
         commonEntityData = new CommonEntityData(453966143L, 1, calendar.getTime(), user, 0);
         Node node4 = new Node(commonEntityData, 34.0724577, -118.7364799);
 
-        calendar.set(2009, 8, 2, 3, 35, 44);
         commonEntityData = new CommonEntityData(453966130L, 1, calendar.getTime(), user, 0);
         Node node5 = new Node(commonEntityData, 34.0671122, -118.7364725);
 
-        calendar.set(2009, 8, 2, 3, 36, 2);
         commonEntityData = new CommonEntityData(453966490L, 1, calendar.getTime(), user, 0);
         Node node6 = new Node(commonEntityData, 34.0722227, -118.7322321);
 
@@ -174,10 +199,6 @@ public class OsmReaderImplTest {
     public void testWays() throws Exception {
         OsmReader reader = new OsmReaderImpl("./src/test/resources/ways.osm");
 
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        OsmUser user = new OsmUser(1, "");
-
-        calendar.set(2009, 3, 11, 6, 30, 8);
         CommonEntityData commonEntityData = new CommonEntityData(358802885L, 1, calendar.getTime(), user, 0);
         Way expectedWay = new Way(commonEntityData);
 
@@ -311,6 +332,8 @@ public class OsmReaderImplTest {
 
         Relation relation = argument.getValue();
         List<RelationMember> members = relation.getMembers();
+
+        assertEquals(4, members.size());
 
         assertEquals(294942404L, members.get(0).getMemberId());
         assertEquals("start", members.get(0).getMemberRole());

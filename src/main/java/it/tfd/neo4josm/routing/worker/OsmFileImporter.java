@@ -1,6 +1,10 @@
 package it.tfd.neo4josm.routing.worker;
 
+import it.tfd.neo4josm.routing.database.OsmReader;
+
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Interface for importing an OSM file.
@@ -8,10 +12,10 @@ import java.io.File;
 public interface OsmFileImporter {
 
     /**
-     * Read the given OSM file and writes it to the Neo4j Database.
-     * @param file
+     * Use the reader to read an OSM file and write it's contents to the Neo4j Database.
+     * @param reader
      * @return
      */
-    boolean importOsmFile(File file);
+    boolean importOsmFile(OsmReader reader);
 
 }
