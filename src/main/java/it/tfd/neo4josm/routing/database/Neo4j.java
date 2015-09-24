@@ -1,9 +1,7 @@
 package it.tfd.neo4josm.routing.database;
 
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.RelationshipType;
-import org.neo4j.graphdb.Transaction;
+import it.tfd.neo4josm.routing.model.Neo4jOsmLabels;
+import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 /**
@@ -11,12 +9,8 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
  */
 public class Neo4j {
 
-    public enum RelTypes implements RelationshipType {
-        ROAD
-    }
-
     private static final String DB_PATH = "build/neo4j-osm-routing-db";
-    private GraphDatabaseService graphDb;
+    protected GraphDatabaseService graphDb;
 
     public Neo4j() {
         this(new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH));
@@ -25,13 +19,6 @@ public class Neo4j {
     public Neo4j(GraphDatabaseService graphDb) {
         this.graphDb = graphDb;
         registerShutdownHook(this.graphDb);
-    }
-
-    /**
-     * @return Underlying neo4j graph database
-     */
-    public GraphDatabaseService getGraphDb() {
-        return graphDb;
     }
 
     /**
@@ -80,4 +67,22 @@ public class Neo4j {
         } );
     }
 
+    /**
+     * Create a node with the given label.
+     *
+     * @param label
+     * @return
+     */
+    public Node createNode(Label label) {
+        return graphDb.createNode(label);
+    }
+
+    /**
+     * Start a transaction.
+     *
+     * @return the transaction.
+     */
+    public Transaction startTransaction() {
+        return graphDb.beginTx();
+    }
 }

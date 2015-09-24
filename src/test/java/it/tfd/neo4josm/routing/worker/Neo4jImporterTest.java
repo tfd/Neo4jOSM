@@ -1,6 +1,7 @@
 package it.tfd.neo4josm.routing.worker;
 
 import it.tfd.neo4josm.routing.database.Neo4j;
+import it.tfd.neo4josm.routing.database.Neo4jRouting;
 import it.tfd.neo4josm.routing.database.OsmReader;
 import it.tfd.neo4josm.routing.database.OsmReaderCallback;
 import it.tfd.neo4josm.routing.model.Neo4jOsmLabels;
@@ -35,7 +36,7 @@ import static org.mockito.Mockito.*;
 public class Neo4jImporterTest {
 
     @Mock
-    private Neo4j neo4j;
+    private Neo4jRouting neo4j;
 
     @Mock
     private GraphDatabaseService graphDb;
@@ -66,11 +67,6 @@ public class Neo4jImporterTest {
 
     private Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     private OsmUser user = OsmUser.NONE;
-
-    @Before
-    public void initNeo4j() {
-        when(neo4j.getGraphDb()).thenReturn(graphDb);
-    }
 
     interface ParseCallback {
         void parse(OsmReaderCallback cb);
