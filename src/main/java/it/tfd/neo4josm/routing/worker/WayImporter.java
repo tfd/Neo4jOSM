@@ -3,6 +3,7 @@ package it.tfd.neo4josm.routing.worker;
 import it.tfd.neo4josm.routing.database.Neo4jRouting;
 import it.tfd.neo4josm.routing.model.Neo4jOsmLabels;
 import it.tfd.neo4josm.routing.model.Neo4jOsmRelationshipTypes;
+import it.tfd.neo4josm.routing.model.OsmWay;
 import org.openstreetmap.osmosis.core.domain.v0_6.Entity;
 import org.openstreetmap.osmosis.core.domain.v0_6.Tag;
 import org.openstreetmap.osmosis.core.domain.v0_6.Way;
@@ -23,7 +24,9 @@ public class WayImporter {
     }
 
     public void load(Way way) {
-        if (isHighway(way)) {
+        OsmWay osmWay = new OsmWay(way);
+
+        if (osmWay.isHighway()) {
             org.neo4j.graphdb.Node node = database.createNode(Neo4jOsmLabels.OSM_WAY, way.getId());
             database.addWay(node);
 
@@ -31,12 +34,18 @@ public class WayImporter {
             Iterator<Tag> tags = way.getTags().iterator();
             while (tags.hasNext()) {
                 Tag tag = tags.next();
-                node.setProperty(tag.getKey().toLowerCase(), tag.getValue().toLowerCase());
+                String key = tag.getKey().toLowerCase();
+                if (key.equals("junction")) {
+                    node.setProperty(key, tag.getValue().toLowerCase().equals("yes"));
+                }
+                else {
+                    node.setProperty(key, tag.getValue().toLowerCase());
+                }
             }
 
             // Make sure that a "oneway" property is present
             if (!node.hasProperty("oneway")) {
-                node.setProperty("oneway", getTagValue(way, "highway").equalsIgnoreCase("motorway") ? "yes" : "no");
+                node.setProperty("oneway", osmWay.isMotorWay() ? "yes" : "no");
             }
 
             org.neo4j.graphdb.Node prevNode = null;
@@ -55,12 +64,10 @@ public class WayImporter {
                 }
                 prevNode = currentNode;
 
-                /*
                 // Check for crossroad
-                if (coordinates.hasProperty("junction") && coordinates.getProperty("junction").equalsIgnoreCase("yes") {
+                if (coordinates.hasProperty("junction") && coordinates.getProperty("junction") == Boolean.TRUE) {
 
                 }
-                */
             }
         }
 
@@ -76,48 +83,5 @@ public class WayImporter {
             database.addNode(node);
         }
         return node;
-    }
-
-    private List<String> permittedHighways = Arrays.asList(
-            "motorway",
-            "motorway_junction",
-            "trunk",
-            "primary",
-            "secondary",
-            "tertiary",
-            "unclassified",
-            "residential",
-            "service",
-            "road",
-            "motorway_link",
-            "trunk_link",
-            "primary_link",
-            "secondary_link",
-            "tertiary_link",
-            "living_street",
-            "pedestrian",
-            "track",
-            "road",
-            "footway",
-            "steps",
-            "path",
-            "cycleway"
-    );
-
-    private boolean isHighway(Way way) {
-        String highway = getTagValue(way, "highway");
-        return highway != null && permittedHighways.contains(highway);
-    }
-
-    private String getTagValue(Entity entity, String key) {
-        Iterator<Tag> tags = entity.getTags().iterator();
-        String value = null;
-        while (tags.hasNext()) {
-            Tag tag = tags.next();
-            if (tag.getKey().equalsIgnoreCase(key)) {
-                value = tag.getValue();
-            }
-        }
-        return value;
     }
 }
